@@ -9,9 +9,16 @@ export function HiddenDebtBarChart() {
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    // 组件是否已挂载的标志
+    let mounted = true;
+    // 确保 DOM 元素存在
+    const chartElement = chartRef.current;
+    if (!chartElement) return;
 
-    chartInstance.current = echarts.init(chartRef.current, 'dark', {
+    // 再次检查组件是否仍挂载
+    if (!mounted) return;
+
+    chartInstance.current = echarts.init(chartElement, 'dark', {
       renderer: 'canvas',
     });
 
@@ -30,7 +37,7 @@ export function HiddenDebtBarChart() {
           return `
             <div style="font-weight:600;margin-bottom:8px;">${item.axisValue}年</div>
             <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};"></span>
+              <span style="display:inline-block;width:10px;height=10px;border-radius:50%;background:${item.color};"></span>
               <span style="color:#9ca3af;">隐债规模:</span>
               <span style="font-weight:600;">${item.value}万亿元</span>
             </div>
@@ -98,9 +105,14 @@ export function HiddenDebtBarChart() {
     };
     window.addEventListener('resize', handleResize);
 
+    // 清理函数
     return () => {
+      mounted = false;
       window.removeEventListener('resize', handleResize);
-      chartInstance.current?.dispose();
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
     };
   }, []);
 

@@ -402,7 +402,11 @@ export function IndustryMap() {
   }, [handleMouseMove]);
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    // 组件是否已挂载的标志
+    let mounted = true;
+    // 确保 DOM 元素存在
+    const chartElement = chartRef.current;
+    if (!chartElement) return;
 
     const initChart = async () => {
       try {
@@ -414,7 +418,12 @@ export function IndustryMap() {
 
         echarts.registerMap('china', chinaGeoJson);
 
-        chartInstance.current = echarts.init(chartRef.current, 'dark', {
+        // 再次检查组件是否仍挂载且元素存在
+        if (!mounted || !chartRef.current) {
+          return;
+        }
+
+        chartInstance.current = echarts.init(chartElement, 'dark', {
           renderer: 'canvas',
         });
 
@@ -525,16 +534,32 @@ export function IndustryMap() {
         };
       } catch (error) {
         console.error('Failed to load map:', error);
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     initChart();
+
+    // 清理函数
+    return () => {
+      mounted = false;
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
+    };
   }, []);
 
   // 初始化经济对比图和资本实力图
   useEffect(() => {
-    if (!economicChartRef.current || !capitalChartRef.current) return;
+    // 组件是否已挂载的标志
+    let mounted = true;
+    // 确保 DOM 元素存在
+    const economicChartElement = economicChartRef.current;
+    const capitalChartElement = capitalChartRef.current;
+    if (!economicChartElement || !capitalChartElement) return;
 
     // 准备经济对比图数据：2025 GDP (Bar) 和 2024 税收收入 (Line)
     const economicData = provinceDebtData
@@ -553,8 +578,13 @@ export function IndustryMap() {
     const capitalData = [...enterpriseData]
       .sort((a, b) => b.listedCompanies - a.listedCompanies);
 
+    // 再次检查组件是否仍挂载且元素存在
+    if (!mounted || !economicChartRef.current || !capitalChartRef.current) {
+      return;
+    }
+
     // 初始化经济对比图
-    economicChartInstance.current = echarts.init(economicChartRef.current, 'dark', { renderer: 'canvas' });
+    economicChartInstance.current = echarts.init(economicChartElement, 'dark', { renderer: 'canvas' });
     const economicOption: echarts.EChartsOption = {
       backgroundColor: 'transparent',
       tooltip: {
@@ -658,7 +688,7 @@ export function IndustryMap() {
     economicChartInstance.current.setOption(economicOption);
 
     // 初始化资本实力图
-    capitalChartInstance.current = echarts.init(capitalChartRef.current, 'dark', { renderer: 'canvas' });
+    capitalChartInstance.current = echarts.init(capitalChartElement, 'dark', { renderer: 'canvas' });
     const capitalOption: echarts.EChartsOption = {
       backgroundColor: 'transparent',
       tooltip: {
@@ -736,10 +766,18 @@ export function IndustryMap() {
     };
     window.addEventListener('resize', handleResize);
 
+    // 清理函数
     return () => {
+      mounted = false;
       window.removeEventListener('resize', handleResize);
-      economicChartInstance.current?.dispose();
-      capitalChartInstance.current?.dispose();
+      if (economicChartInstance.current) {
+        economicChartInstance.current.dispose();
+        economicChartInstance.current = null;
+      }
+      if (capitalChartInstance.current) {
+        capitalChartInstance.current.dispose();
+        capitalChartInstance.current = null;
+      }
     };
   }, []);
 

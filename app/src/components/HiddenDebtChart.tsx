@@ -9,9 +9,16 @@ export function HiddenDebtChart() {
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    // 组件是否已挂载的标志
+    let mounted = true;
+    // 确保 DOM 元素存在
+    const chartElement = chartRef.current;
+    if (!chartElement) return;
 
-    chartInstance.current = echarts.init(chartRef.current, 'dark', {
+    // 再次检查组件是否仍挂载
+    if (!mounted) return;
+
+    chartInstance.current = echarts.init(chartElement, 'dark', {
       renderer: 'canvas',
     });
 
@@ -109,9 +116,14 @@ export function HiddenDebtChart() {
     };
     window.addEventListener('resize', handleResize);
 
+    // 清理函数
     return () => {
+      mounted = false;
       window.removeEventListener('resize', handleResize);
-      chartInstance.current?.dispose();
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
     };
   }, []);
 

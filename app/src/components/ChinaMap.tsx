@@ -317,7 +317,11 @@ export function ChinaMap() {
   }, [handleMouseMove]);
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    // 组件是否已挂载的标志
+    let mounted = true;
+    // 确保 DOM 元素存在
+    const chartElement = chartRef.current;
+    if (!chartElement) return;
 
     const initChart = async () => {
       try {
@@ -326,10 +330,15 @@ export function ChinaMap() {
           throw new Error('Failed to load China map data');
         }
         const chinaGeoJson = await response.json();
-        
+
         echarts.registerMap('china', chinaGeoJson);
 
-        chartInstance.current = echarts.init(chartRef.current, 'dark', {
+        // 再次检查组件是否仍挂载且元素存在
+        if (!mounted || !chartRef.current) {
+          return;
+        }
+
+        chartInstance.current = echarts.init(chartElement, 'dark', {
           renderer: 'canvas',
         });
 
@@ -438,11 +447,22 @@ export function ChinaMap() {
         };
       } catch (error) {
         console.error('Failed to load map:', error);
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     initChart();
+
+    // 清理函数
+    return () => {
+      mounted = false;
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
+    };
   }, []);
 
   // 获取Top10省份（按调整后债务率）
