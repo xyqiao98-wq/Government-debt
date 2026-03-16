@@ -31,38 +31,40 @@ export function TabNavigation() {
       <div className="sticky top-16 z-40 bg-[#0a0f1c]/95 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
           <div className="flex-1 flex justify-center">
-            <TabsList className="h-12 bg-transparent border-0 p-0">
-            <TabsTrigger
-              value="overview"
-              className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400"
-            >
-              全国概览
-            </TabsTrigger>
-            <TabsTrigger
-              value="industry-map"
-              className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400"
-            >
-              产业地图
-            </TabsTrigger>
-            <TabsTrigger
-              value="historical-trend"
-              className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400"
-            >
-              历史趋势
-            </TabsTrigger>
-            <TabsTrigger
-              value="policy-timeline"
-              className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400"
-            >
-              政策脉络
-            </TabsTrigger>
-            <TabsTrigger
-              value="debt-expressions"
-              className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400"
-            >
-              化债表述
-            </TabsTrigger>
-          </TabsList>
+            <div className="overflow-x-auto w-full md:w-auto scrollbar-hide">
+              <TabsList className="h-12 bg-transparent border-0 p-0 min-w-max">
+                <TabsTrigger
+                  value="overview"
+                  className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 whitespace-nowrap"
+                >
+                  全国概览
+                </TabsTrigger>
+                <TabsTrigger
+                  value="industry-map"
+                  className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 whitespace-nowrap"
+                >
+                  产业地图
+                </TabsTrigger>
+                <TabsTrigger
+                  value="historical-trend"
+                  className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 whitespace-nowrap"
+                >
+                  历史趋势
+                </TabsTrigger>
+                <TabsTrigger
+                  value="policy-timeline"
+                  className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 whitespace-nowrap"
+                >
+                  政策脉络
+                </TabsTrigger>
+                <TabsTrigger
+                  value="debt-expressions"
+                  className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 whitespace-nowrap"
+                >
+                  化债表述
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
         </div>
 

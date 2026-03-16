@@ -117,11 +117,14 @@ html {
   height: 100%;
 }
 
-/* Fix for hidden tab content */
-[data-state="inactive"] {
+/* Fix for hidden tab content - removed problematic rules */
+/* [data-state="inactive"] {
   display: none !important;
 }
 
 [data-state="active"] {
   display: block !important;
-}
+} */
+/* Hide scrollbar for tab navigation */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
