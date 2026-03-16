@@ -109,3 +109,19 @@ html {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Ensure chart containers have proper layout */
+.echarts-container, .echarts-container > div {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fix for hidden tab content */
+[data-state="inactive"] {
+  display: none !important;
+}
+
+[data-state="active"] {
+  display: block !important;
+}

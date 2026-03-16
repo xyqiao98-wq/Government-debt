@@ -367,6 +367,7 @@ export function IndustryMap() {
   const capitalChartRef = useRef<HTMLDivElement>(null);
   const economicChartInstance = useRef<echarts.ECharts | null>(null);
   const capitalChartInstance = useRef<echarts.ECharts | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedProvince, setSelectedProvince] = useState<typeof enterpriseData[0] | null>(null);
   const [hoveredProvince, setHoveredProvince] = useState<typeof enterpriseData[0] | null>(null);
@@ -417,6 +418,27 @@ export function IndustryMap() {
     // 确保 DOM 元素存在
     const chartElement = chartRef.current;
     if (!chartElement) return;
+
+    // 检查容器是否具有有效尺寸
+    const hasValidSize = () => {
+      return chartElement.offsetWidth > 0 && chartElement.offsetHeight > 0;
+    };
+
+    // 延迟初始化函数，等待容器具有有效尺寸
+    const initWhenReady = async () => {
+      if (!hasValidSize()) {
+        // 如果容器尺寸无效，等待一段时间后重试
+        console.log('Chart container has no valid size, waiting...');
+        setTimeout(() => {
+          if (mounted && chartRef.current) {
+            initWhenReady();
+          }
+        }, 100);
+        return;
+      }
+
+      await initChart();
+    };
 
     const initChart = async () => {
       try {
@@ -516,6 +538,17 @@ export function IndustryMap() {
         chartInstance.current.setOption(option);
         setLoading(false);
 
+        // 添加ResizeObserver监听容器尺寸变化
+        if (resizeObserverRef.current) {
+          resizeObserverRef.current.disconnect();
+        }
+        resizeObserverRef.current = new ResizeObserver(() => {
+          if (chartInstance.current && !chartInstance.current.isDisposed()) {
+            chartInstance.current.resize();
+          }
+        });
+        resizeObserverRef.current.observe(chartElement);
+
         // 鼠标悬停事件
         chartInstance.current.on('mouseover', (params: any) => {
           const province = findProvinceByFullName(params.name);
@@ -557,11 +590,15 @@ export function IndustryMap() {
       }
     };
 
-    initChart();
+    initWhenReady();
 
     // 清理函数
     return () => {
       mounted = false;
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+        resizeObserverRef.current = null;
+      }
       if (chartInstance.current) {
         chartInstance.current.dispose();
         chartInstance.current = null;
@@ -595,12 +632,40 @@ export function IndustryMap() {
     const capitalData = [...(enterpriseData || [])]
       .sort((a, b) => b.listedCompanies - a.listedCompanies);
 
-    // 再次检查组件是否仍挂载且元素存在
-    if (!mounted || !economicChartRef.current || !capitalChartRef.current) {
-      return;
-    }
+    // 检查容器是否具有有效尺寸
+    const hasValidSize = (element: HTMLElement) => {
+      return element.offsetWidth > 0 && element.offsetHeight > 0;
+    };
 
-    // 初始化经济对比图
+    const initChartsWhenReady = () => {
+      if (!mounted || !economicChartRef.current || !capitalChartRef.current) {
+        return;
+      }
+
+      const economicElement = economicChartRef.current;
+      const capitalElement = capitalChartRef.current;
+
+      if (!hasValidSize(economicElement) || !hasValidSize(capitalElement)) {
+        // 如果容器尺寸无效，等待一段时间后重试
+        console.log('Chart containers have no valid size, waiting...');
+        setTimeout(() => {
+          if (mounted) {
+            initChartsWhenReady();
+          }
+        }, 100);
+        return;
+      }
+
+      // 容器尺寸有效，初始化图表
+      initCharts();
+    };
+
+    const initCharts = () => {
+      if (!mounted || !economicChartRef.current || !capitalChartRef.current) {
+        return;
+      }
+
+      // 初始化经济对比图
     economicChartInstance.current = echarts.init(economicChartElement, 'dark', { renderer: 'canvas' });
     const economicOption: echarts.EChartsOption = {
       backgroundColor: 'transparent',
