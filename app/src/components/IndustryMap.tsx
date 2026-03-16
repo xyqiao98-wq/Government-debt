@@ -368,11 +368,13 @@ export function IndustryMap() {
   const economicChartInstance = useRef<echarts.ECharts | null>(null);
   const capitalChartInstance = useRef<echarts.ECharts | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedProvince, setSelectedProvince] = useState<typeof enterpriseData[0] | null>(null);
   const [hoveredProvince, setHoveredProvince] = useState<typeof enterpriseData[0] | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedPolicy, setSelectedPolicy] = useState<IndustryPolicy | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   // 获取完整省份名称
   const getFullProvinceName = (shortName: string): string => {
@@ -397,6 +399,61 @@ export function IndustryMap() {
   const handlePolicyClick = useCallback((policy: IndustryPolicy) => {
     setSelectedPolicy(policy);
   }, []);
+
+  // 使用IntersectionObserver检测组件是否可见
+  useEffect(() => {
+    const element = chartRef.current?.parentElement?.parentElement;
+    if (!element) return;
+
+    intersectionObserverRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          setIsVisible(entry.isIntersecting);
+          if (entry.isIntersecting) {
+            console.log('IndustryMap component is now visible');
+            // 当组件可见时，触发图表重绘
+            setTimeout(() => {
+              chartInstance.current?.resize();
+              economicChartInstance.current?.resize();
+              capitalChartInstance.current?.resize();
+            }, 100);
+          }
+        });
+      },
+      {
+        threshold: 0.1, // 当10%的元素可见时触发
+        rootMargin: '50px' // 提前50px开始观察
+      }
+    );
+
+    intersectionObserverRef.current.observe(element);
+
+    return () => {
+      if (intersectionObserverRef.current) {
+        intersectionObserverRef.current.disconnect();
+        intersectionObserverRef.current = null;
+      }
+    };
+  }, []);
+
+  // 当组件可见时，强制图表重绘
+  useEffect(() => {
+    if (isVisible) {
+      console.log('IndustryMap visible, forcing chart resize');
+      const resizeCharts = () => {
+        chartInstance.current?.resize();
+        economicChartInstance.current?.resize();
+        capitalChartInstance.current?.resize();
+      };
+
+      // 立即重绘
+      resizeCharts();
+
+      // 延迟重绘以处理可能的布局延迟
+      setTimeout(resizeCharts, 100);
+      setTimeout(resizeCharts, 500);
+    }
+  }, [isVisible]);
 
   // 数据检查与日志
   useEffect(() => {
@@ -425,16 +482,29 @@ export function IndustryMap() {
     };
 
     // 延迟初始化函数，等待容器具有有效尺寸
+    let retryCount = 0;
+    const maxRetries = 50; // 最多重试50次（5秒）
+
     const initWhenReady = async () => {
+      if (!mounted || !chartRef.current) {
+        return;
+      }
+
       if (!hasValidSize()) {
         // 如果容器尺寸无效，等待一段时间后重试
-        console.log('Chart container has no valid size, waiting...');
-        setTimeout(() => {
-          if (mounted && chartRef.current) {
-            initWhenReady();
-          }
-        }, 100);
-        return;
+        retryCount++;
+        if (retryCount > maxRetries) {
+          console.warn('Chart container still has no valid size after max retries, attempting to initialize anyway');
+          // 即使尺寸无效也尝试初始化，后续通过resize调整
+        } else {
+          console.log(`Chart container has no valid size, waiting... (retry ${retryCount}/${maxRetries})`);
+          setTimeout(() => {
+            if (mounted && chartRef.current) {
+              initWhenReady();
+            }
+          }, 100);
+          return;
+        }
       }
 
       await initChart();
@@ -637,6 +707,9 @@ export function IndustryMap() {
       return element.offsetWidth > 0 && element.offsetHeight > 0;
     };
 
+    let retryCount = 0;
+    const maxRetries = 50; // 最多重试50次（5秒）
+
     const initChartsWhenReady = () => {
       if (!mounted || !economicChartRef.current || !capitalChartRef.current) {
         return;
@@ -647,13 +720,19 @@ export function IndustryMap() {
 
       if (!hasValidSize(economicElement) || !hasValidSize(capitalElement)) {
         // 如果容器尺寸无效，等待一段时间后重试
-        console.log('Chart containers have no valid size, waiting...');
-        setTimeout(() => {
-          if (mounted) {
-            initChartsWhenReady();
-          }
-        }, 100);
-        return;
+        retryCount++;
+        if (retryCount > maxRetries) {
+          console.warn('Chart containers still have no valid size after max retries, attempting to initialize anyway');
+          // 即使尺寸无效也尝试初始化，后续通过resize调整
+        } else {
+          console.log(`Chart containers have no valid size, waiting... (retry ${retryCount}/${maxRetries})`);
+          setTimeout(() => {
+            if (mounted) {
+              initChartsWhenReady();
+            }
+          }, 100);
+          return;
+        }
       }
 
       // 容器尺寸有效，初始化图表
@@ -666,8 +745,8 @@ export function IndustryMap() {
       }
 
       // 初始化经济对比图
-    economicChartInstance.current = echarts.init(economicChartElement, 'dark', { renderer: 'canvas' });
-    const economicOption: echarts.EChartsOption = {
+      economicChartInstance.current = echarts.init(economicChartElement, 'dark', { renderer: 'canvas' });
+      const economicOption: echarts.EChartsOption = {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',
@@ -861,6 +940,7 @@ export function IndustryMap() {
         capitalChartInstance.current = null;
       }
     };
+  }
   }, []);
 
   // 获取Top10省份（按上市公司数量）
@@ -891,12 +971,12 @@ export function IndustryMap() {
             {/* 经济对比图 */}
             <div className="rounded-xl bg-[#111827] border border-white/5 p-4">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">经济对比图 (2025 GDP vs 2024 税收收入)</h3>
-              <div ref={economicChartRef} className="w-full h-[300px] min-h-[300px]" />
+              <div ref={economicChartRef} className="w-full h-[250px] md:h-[300px] min-h-[250px] md:min-h-[300px]" />
             </div>
             {/* 资本实力图 */}
             <div className="rounded-xl bg-[#111827] border border-white/5 p-4">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">资本实力图 (上市公司数量)</h3>
-              <div ref={capitalChartRef} className="w-full h-[300px] min-h-[300px]" />
+              <div ref={capitalChartRef} className="w-full h-[250px] md:h-[300px] min-h-[250px] md:min-h-[300px]" />
             </div>
           </div>
 
@@ -910,7 +990,7 @@ export function IndustryMap() {
                   </div>
                 </div>
               )}
-              <div ref={chartRef} className="w-full h-[550px] min-h-[550px]" />
+              <div ref={chartRef} className="w-full h-[400px] md:h-[550px] min-h-[400px] md:min-h-[550px]" />
             </div>
 
             <div className="rounded-xl bg-[#111827] border border-white/5 p-6">
