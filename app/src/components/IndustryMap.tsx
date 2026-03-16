@@ -7,6 +7,7 @@ import { provinceDebtData } from '@/data/debtData';
 import { industryPolicy } from '@/data/industryPolicy2026';
 import type { IndustryPolicy } from '@/data/industryPolicy2026';
 import { Building2, X, Factory } from 'lucide-react';
+import chinaGeoJson from '@/../public/china.json';
 
 // 省份名称映射：将简称映射为地图GeoJSON中的完整名称
 const provinceNameMap: Record<string, string> = {
@@ -485,7 +486,12 @@ export function IndustryMap() {
     let retryCount = 0;
     const maxRetries = 50; // 最多重试50次（5秒）
 
-    const initWhenReady = async () => {
+    // resize事件处理函数
+    const handleResize = () => {
+      chartInstance.current?.resize();
+    };
+
+    const initWhenReady = () => {
       if (!mounted || !chartRef.current) {
         return;
       }
@@ -507,157 +513,139 @@ export function IndustryMap() {
         }
       }
 
-      await initChart();
-    };
-
-    const initChart = async () => {
       try {
-        const response = await fetch('/china.json');
-        if (!response.ok) {
-          throw new Error('Failed to load China map data');
-        }
-        const chinaGeoJson = await response.json();
-        console.log('China GeoJSON loaded:', chinaGeoJson);
-
-        echarts.registerMap('china', chinaGeoJson);
-
-        // 再次检查组件是否仍挂载且元素存在
-        if (!mounted || !chartRef.current) {
-          return;
-        }
-
-        chartInstance.current = echarts.init(chartElement, 'dark', {
-          renderer: 'canvas',
-        });
-
-        // 准备地图数据 - 使用上市公司数量进行着色
-        // 过滤掉 provinceNameMap 中不存在的省份（如台湾、香港、澳门等）
-        const mapData = (enterpriseData || [])
-          .filter(item => provinceNameMap[item.province]) // 只映射有数据的省份
-          .map(item => ({
-            name: getFullProvinceName(item.province),
-            value: item.listedCompanies,
-            itemStyle: {
-              areaColor: getEnterpriseColor(item.listedCompanies),
-            },
-          }));
-        console.log('Industry Data Status:', enterpriseData);
-        console.log('Map Data:', mapData);
-
-        const option: echarts.EChartsOption = {
-          backgroundColor: 'transparent',
-          tooltip: {
-            show: false,
-          },
-          visualMap: {
-            type: 'piecewise',
-            min: 0,
-            max: 900,
-            left: '20',
-            bottom: '20',
-            textStyle: {
-              color: '#9ca3af',
-            },
-            pieces: [
-              { min: 0, max: 50, label: '企业较少 (<50家)', color: '#10b981' },
-              { min: 50, max: 150, label: '企业中等 (50-150家)', color: '#f59e0b' },
-              { min: 150, max: 300, label: '企业较多 (150-300家)', color: '#f97316' },
-              { min: 300, label: '企业密集 (>300家)', color: '#dc2626' },
-            ],
-          },
-          series: [
-            {
-              name: '上市公司数量',
-              type: 'map',
-              map: 'china',
-              roam: true,
-              zoom: 1.2,
-              center: [105, 36],
-              label: {
-                show: true,
-                fontSize: 10,
-                color: '#fff',
-                textBorderColor: 'transparent',
-              },
-              emphasis: {
-                label: {
-                  show: true,
-                  fontSize: 12,
-                  fontWeight: 'bold',
-                },
-                itemStyle: {
-                  areaColor: '#3b82f6',
-                  shadowBlur: 20,
-                  shadowColor: 'rgba(59, 130, 246, 0.5)',
-                },
-              },
-              select: {
-                itemStyle: {
-                  areaColor: '#3b82f6',
-                },
-              },
-              itemStyle: {
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                borderWidth: 1,
-              },
-              data: mapData,
-            },
-          ],
-        };
-
-        chartInstance.current.setOption(option);
-        setLoading(false);
-
-        // 添加ResizeObserver监听容器尺寸变化
-        if (resizeObserverRef.current) {
-          resizeObserverRef.current.disconnect();
-        }
-        resizeObserverRef.current = new ResizeObserver(() => {
-          if (chartInstance.current && !chartInstance.current.isDisposed()) {
-            chartInstance.current.resize();
-          }
-        });
-        resizeObserverRef.current.observe(chartElement);
-
-        // 鼠标悬停事件
-        chartInstance.current.on('mouseover', (params: any) => {
-          const province = findProvinceByFullName(params.name);
-          if (province) {
-            setHoveredProvince(province);
-          }
-        });
-
-        chartInstance.current.on('mouseout', () => {
-          setHoveredProvince(null);
-        });
-
-        // 点击事件
-        chartInstance.current.on('click', (params: any) => {
-          const province = findProvinceByFullName(params.name);
-          if (province) {
-            setSelectedProvince(province);
-          }
-        });
-
-        const handleResize = () => {
-          chartInstance.current?.resize();
-        };
-        window.addEventListener('resize', handleResize);
-
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          chartInstance.current?.dispose();
-        };
+        initChart();
       } catch (error) {
-        console.error('Failed to load map:', error);
-        if (mounted) {
-          setLoading(false);
-        }
-      } finally {
+        console.error('Failed to initialize chart:', error);
         if (mounted) {
           setLoading(false);
         }
       }
+    };
+
+    const initChart = () => {
+      // 使用静态导入的地图数据
+      echarts.registerMap('china', chinaGeoJson as any);
+
+      // 再次检查组件是否仍挂载且元素存在
+      if (!mounted || !chartRef.current) {
+        return;
+      }
+
+      chartInstance.current = echarts.init(chartElement, 'dark', {
+        renderer: 'canvas',
+      });
+
+      // 准备地图数据 - 使用上市公司数量进行着色
+      // 过滤掉 provinceNameMap 中不存在的省份（如台湾、香港、澳门等）
+      const mapData = (enterpriseData || [])
+        .filter(item => provinceNameMap[item.province]) // 只映射有数据的省份
+        .map(item => ({
+          name: getFullProvinceName(item.province),
+          value: item.listedCompanies,
+          itemStyle: {
+            areaColor: getEnterpriseColor(item.listedCompanies),
+          },
+        }));
+      console.log('Industry Data Status:', enterpriseData);
+      console.log('Map Data:', mapData);
+
+      const option: echarts.EChartsOption = {
+        backgroundColor: 'transparent',
+        tooltip: {
+          show: false,
+        },
+        visualMap: {
+          type: 'piecewise',
+          min: 0,
+          max: 900,
+          left: '20',
+          bottom: '20',
+          textStyle: {
+            color: '#9ca3af',
+          },
+          pieces: [
+            { min: 0, max: 50, label: '企业较少 (<50家)', color: '#10b981' },
+            { min: 50, max: 150, label: '企业中等 (50-150家)', color: '#f59e0b' },
+            { min: 150, max: 300, label: '企业较多 (150-300家)', color: '#f97316' },
+            { min: 300, label: '企业密集 (>300家)', color: '#dc2626' },
+          ],
+        },
+        series: [
+          {
+            name: '上市公司数量',
+            type: 'map',
+            map: 'china',
+            roam: true,
+            zoom: 1.2,
+            center: [105, 36],
+            label: {
+              show: true,
+              fontSize: 10,
+              color: '#fff',
+              textBorderColor: 'transparent',
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 12,
+                fontWeight: 'bold',
+              },
+              itemStyle: {
+                areaColor: '#3b82f6',
+                shadowBlur: 20,
+                shadowColor: 'rgba(59, 130, 246, 0.5)',
+              },
+            },
+            select: {
+              itemStyle: {
+                areaColor: '#3b82f6',
+              },
+            },
+            itemStyle: {
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              borderWidth: 1,
+            },
+            data: mapData,
+          },
+        ],
+      };
+
+      chartInstance.current.setOption(option);
+      setLoading(false);
+
+      // 添加ResizeObserver监听容器尺寸变化
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+      resizeObserverRef.current = new ResizeObserver(() => {
+        if (chartInstance.current && !chartInstance.current.isDisposed()) {
+          chartInstance.current.resize();
+        }
+      });
+      resizeObserverRef.current.observe(chartElement);
+
+      // 鼠标悬停事件
+      chartInstance.current.on('mouseover', (params: any) => {
+        const province = findProvinceByFullName(params.name);
+        if (province) {
+          setHoveredProvince(province);
+        }
+      });
+
+      chartInstance.current.on('mouseout', () => {
+        setHoveredProvince(null);
+      });
+
+      // 点击事件
+      chartInstance.current.on('click', (params: any) => {
+        const province = findProvinceByFullName(params.name);
+        if (province) {
+          setSelectedProvince(province);
+        }
+      });
+
+      window.addEventListener('resize', handleResize);
     };
 
     initWhenReady();
@@ -665,6 +653,7 @@ export function IndustryMap() {
     // 清理函数
     return () => {
       mounted = false;
+      window.removeEventListener('resize', handleResize);
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
         resizeObserverRef.current = null;
