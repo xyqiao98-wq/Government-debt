@@ -1,0 +1,170 @@
+import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import * as echarts from 'echarts';
+import { trendData } from '@/data/debtData';
+import { TrendingUp } from 'lucide-react';
+
+export function TrendChart() {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const chartInstance = useRef<echarts.ECharts | null>(null);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    chartInstance.current = echarts.init(chartRef.current, 'dark', {
+      renderer: 'canvas',
+    });
+
+    const option: echarts.EChartsOption = {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        textStyle: {
+          color: '#f9fafb',
+        },
+        formatter: (params: any) => {
+          let result = `<div style="font-weight:600;margin-bottom:8px;">${params[0]?.axisValue ?? ''}年</div>`;
+          params.forEach((item: any) => {
+            const value = item.value;
+            const displayValue = value === null || isNaN(Number(value)) ? '-' : Number(value).toFixed(2);
+            const suffix = value === null || isNaN(Number(value)) ? '' : '万亿元';
+            result += `
+              <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};"></span>
+                <span style="color:#9ca3af;">${item.seriesName}:</span>
+                <span style="font-weight:600;">${displayValue}${suffix}</span>
+              </div>
+            `;
+          });
+          return result;
+        },
+      },
+      legend: {
+        data: ['政府性债务', '城投带息债务'],
+        top: 10,
+        right: 10,
+        textStyle: {
+          color: '#9ca3af',
+        },
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '15%',
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: trendData?.map(item => item.year) ?? [],
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(255, 255, 255, 0.1)',
+          },
+        },
+        axisLabel: {
+          color: '#9ca3af',
+        },
+      },
+      yAxis: {
+        type: 'value',
+        name: '万亿元',
+        nameTextStyle: {
+          color: '#6b7280',
+        },
+        axisLine: {
+          show: false,
+        },
+        axisLabel: {
+          color: '#9ca3af',
+        },
+        splitLine: {
+          lineStyle: {
+            color: 'rgba(255, 255, 255, 0.05)',
+          },
+        },
+      },
+      series: [
+        {
+          name: '政府性债务',
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            width: 3,
+            color: '#3b82f6',
+          },
+          itemStyle: {
+            color: '#3b82f6',
+            borderWidth: 2,
+            borderColor: '#fff',
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(59, 130, 246, 0.3)' },
+              { offset: 1, color: 'rgba(59, 130, 246, 0.01)' },
+            ]),
+          },
+          data: trendData?.map(item => item?.govDebt ?? 0) ?? [],
+        },
+        {
+          name: '城投带息债务',
+          type: 'line',
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: {
+            width: 3,
+            color: '#dc2626',
+          },
+          itemStyle: {
+            color: '#dc2626',
+            borderWidth: 2,
+            borderColor: '#fff',
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(220, 38, 38, 0.3)' },
+              { offset: 1, color: 'rgba(220, 38, 38, 0.01)' },
+            ]),
+          },
+          data: trendData?.map(item => item?.ctDebt ?? 0) ?? [],
+        },
+      ],
+    };
+
+    chartInstance.current.setOption(option);
+
+    const handleResize = () => {
+      chartInstance.current?.resize();
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      chartInstance.current?.dispose();
+    };
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+      className="rounded-xl bg-[#111827] border border-white/5 p-6"
+    >
+      <div className="flex items-center gap-3 mb-6">
+        <TrendingUp className="w-5 h-5 text-blue-400" />
+        <h3 className="text-lg font-semibold text-white">债务趋势</h3>
+        <span className="text-xs text-gray-500">(2020-2025年)</span>
+      </div>
+      <div ref={chartRef} className="w-full h-[280px]" />
+    </motion.div>
+  );
+}
