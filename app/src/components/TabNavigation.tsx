@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Hero } from './Hero';
 import { StatCard } from './StatCard';
 import { ChinaMap } from './ChinaMap';
-import { IndustryMap } from './IndustryMap';
+// import { IndustryMap } from './IndustryMap';
 import { DataTable } from './DataTable';
 import { MultiDimensionDashboard } from './MultiDimensionDashboard';
 import { PolicyTimeline } from './PolicyTimeline';
@@ -39,12 +39,12 @@ export function TabNavigation() {
                 >
                   全国概览
                 </TabsTrigger>
-                <TabsTrigger
+                {/* <TabsTrigger
                   value="industry-map"
                   className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 whitespace-nowrap"
                 >
                   产业地图
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger
                   value="historical-trend"
                   className="h-11 px-4 text-sm font-medium data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 whitespace-nowrap"
@@ -198,12 +198,13 @@ export function TabNavigation() {
       </TabsContent>
 
 
-      {/* 产业地图选项卡 */}
+      {/* 产业地图选项卡 - 暂时隐藏
       <TabsContent value="industry-map" className="focus-visible:outline-none">
         <main className="pt-6">
           <IndustryMap />
         </main>
       </TabsContent>
+      */}
 
 
       {/* 历史趋势选项卡 */}
