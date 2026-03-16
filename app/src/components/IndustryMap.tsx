@@ -380,6 +380,7 @@ export function IndustryMap() {
 
   // 通过完整名称查找省份数据
   const findProvinceByFullName = (fullName: string) => {
+    if (!enterpriseData || enterpriseData.length === 0) return undefined;
     // 尝试逆向查找：从完整名称找到简称
     const shortName = Object.keys(provinceNameMap).find(
       key => provinceNameMap[key] === fullName
@@ -394,6 +395,15 @@ export function IndustryMap() {
 
   const handlePolicyClick = useCallback((policy: IndustryPolicy) => {
     setSelectedPolicy(policy);
+  }, []);
+
+  // 数据检查与日志
+  useEffect(() => {
+    console.log('IndustryMap 数据检查:');
+    console.log('enterpriseData:', enterpriseData?.length, '条记录', enterpriseData?.slice(0, 2));
+    console.log('provinceDebtData:', provinceDebtData?.length, '条记录', provinceDebtData?.slice(0, 2));
+    console.log('provinceStatsMaster:', provinceStatsMaster?.length, '条记录', provinceStatsMaster?.slice(0, 2));
+    console.log('industryPolicy:', industryPolicy?.length, '条记录', industryPolicy?.slice(0, 2));
   }, []);
 
   useEffect(() => {
@@ -430,7 +440,7 @@ export function IndustryMap() {
 
         // 准备地图数据 - 使用上市公司数量进行着色
         // 过滤掉 provinceNameMap 中不存在的省份（如台湾、香港、澳门等）
-        const mapData = enterpriseData
+        const mapData = (enterpriseData || [])
           .filter(item => provinceNameMap[item.province]) // 只映射有数据的省份
           .map(item => ({
             name: getFullProvinceName(item.province),
@@ -540,6 +550,10 @@ export function IndustryMap() {
         if (mounted) {
           setLoading(false);
         }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -565,9 +579,9 @@ export function IndustryMap() {
     if (!economicChartElement || !capitalChartElement) return;
 
     // 准备经济对比图数据：2025 GDP (Bar) 和 2024 税收收入 (Line)
-    const economicData = provinceDebtData
+    const economicData = (provinceDebtData || [])
       .map(item => {
-        const provinceStat = provinceStatsMaster.find(p => p.province === item.province);
+        const provinceStat = (provinceStatsMaster || []).find(p => p.province === item.province);
         return {
           province: item.province,
           gdp2025: item.gdp2025 ?? 0,
@@ -578,7 +592,7 @@ export function IndustryMap() {
       .sort((a, b) => b.gdp2025 - a.gdp2025); // 按GDP降序排列
 
     // 准备资本实力图数据：上市公司数量 (Bar)，按数值降序排列
-    const capitalData = [...enterpriseData]
+    const capitalData = [...(enterpriseData || [])]
       .sort((a, b) => b.listedCompanies - a.listedCompanies);
 
     // 再次检查组件是否仍挂载且元素存在
@@ -785,7 +799,7 @@ export function IndustryMap() {
   }, []);
 
   // 获取Top10省份（按上市公司数量）
-  const top10Provinces = [...enterpriseData]
+  const top10Provinces = [...(enterpriseData || [])]
     .sort((a, b) => b.listedCompanies - a.listedCompanies)
     .slice(0, 10);
 
@@ -812,12 +826,12 @@ export function IndustryMap() {
             {/* 经济对比图 */}
             <div className="rounded-xl bg-[#111827] border border-white/5 p-4">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">经济对比图 (2025 GDP vs 2024 税收收入)</h3>
-              <div ref={economicChartRef} className="w-full h-[300px]" />
+              <div ref={economicChartRef} className="w-full h-[300px] min-h-[300px]" />
             </div>
             {/* 资本实力图 */}
             <div className="rounded-xl bg-[#111827] border border-white/5 p-4">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">资本实力图 (上市公司数量)</h3>
-              <div ref={capitalChartRef} className="w-full h-[300px]" />
+              <div ref={capitalChartRef} className="w-full h-[300px] min-h-[300px]" />
             </div>
           </div>
 
@@ -831,7 +845,7 @@ export function IndustryMap() {
                   </div>
                 </div>
               )}
-              <div ref={chartRef} className="w-full h-[550px]" />
+              <div ref={chartRef} className="w-full h-[550px] min-h-[550px]" />
             </div>
 
             <div className="rounded-xl bg-[#111827] border border-white/5 p-6">
