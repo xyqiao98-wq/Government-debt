@@ -415,6 +415,7 @@ export function IndustryMap() {
           throw new Error('Failed to load China map data');
         }
         const chinaGeoJson = await response.json();
+        console.log('China GeoJSON loaded:', chinaGeoJson);
 
         echarts.registerMap('china', chinaGeoJson);
 
@@ -438,6 +439,8 @@ export function IndustryMap() {
               areaColor: getEnterpriseColor(item.listedCompanies),
             },
           }));
+        console.log('Industry Data Status:', enterpriseData);
+        console.log('Map Data:', mapData);
 
         const option: echarts.EChartsOption = {
           backgroundColor: 'transparent',
