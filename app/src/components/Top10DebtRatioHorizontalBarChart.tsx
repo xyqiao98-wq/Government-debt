@@ -120,7 +120,7 @@ export function Top10DebtRatioHorizontalBarChart() {
     >
       <div className="flex items-center gap-3 mb-6">
         <BarChart3 className="w-5 h-5 text-orange-400" />
-        <h3 className="text-lg font-semibold text-white">债务风险 Top 10</h3>
+        <h3 className="text-lg font-semibold text-white">宽口径债务率 Top 10</h3>
         <span className="text-xs text-gray-500">(按宽口径债务率 · 2024年末)</span>
       </div>
       <div ref={chartRef} className="w-full h-[280px]" />

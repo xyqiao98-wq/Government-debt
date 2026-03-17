@@ -129,7 +129,7 @@ export function TabNavigation() {
                   dataYear="2024"
                 />
                 <StatCard
-                  title="平均政府债务率"
+                  title="平均窄口径债务率"
                   value={Number(nationalOverview.avgDebtRatio.toFixed(2))}
                   unit="%"
                   change={5.2}

@@ -31,7 +31,7 @@ export interface NationalOverview {
   localBondBalance: number;   // 全国政府性债务余额（万亿元）
   cityInvestDebt: number;     // 全国城投带息债务余额（万亿元）
   growthRate: number;         // 债务增速（%）
-  avgDebtRatio: number;       // 平均政府债务率（%）
+  avgDebtRatio: number;       // 平均窄口径债务率（%）
   updateTime: string;         // 更新时间
 }
 

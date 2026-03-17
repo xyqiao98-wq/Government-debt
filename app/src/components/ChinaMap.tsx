@@ -367,10 +367,10 @@ export function ChinaMap() {
               color: '#9ca3af',
             },
             pieces: [
-              { min: 0, max: 150, label: '风险偏低 (<150%)', color: '#10b981' },
-              { min: 150, max: 250, label: '风险适中 (150-250%)', color: '#f59e0b' },
-              { min: 250, max: 400, label: '风险偏高 (250-400%)', color: '#f97316' },
-              { min: 400, label: '风险较高 (>400%)', color: '#dc2626' },
+              { min: 0, max: 150, label: '债务率偏低 (<150%)', color: '#10b981' },
+              { min: 150, max: 250, label: '债务率适中 (150-250%)', color: '#f59e0b' },
+              { min: 250, max: 400, label: '债务率偏高 (250-400%)', color: '#f97316' },
+              { min: 400, label: '债务率较高 (>400%)', color: '#dc2626' },
             ],
           },
           series: [
@@ -504,7 +504,7 @@ export function ChinaMap() {
             <div className="rounded-xl bg-[#111827] border border-white/5 p-6">
               <div className="flex items-center gap-2 mb-6">
                 <AlertCircle className="w-5 h-5 text-red-400" />
-                <h3 className="text-lg font-semibold text-white">债务风险 Top 10</h3>
+                <h3 className="text-lg font-semibold text-white">宽口径债务率 Top 10</h3>
               </div>
               <div className="text-xs text-gray-500 mb-4">数据口径：2024年末</div>
 

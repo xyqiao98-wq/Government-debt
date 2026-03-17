@@ -65,7 +65,7 @@ export function Hero() {
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111827] border border-white/5">
             <BarChart3 className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm text-gray-300">实时数据更新</span>
+            <span className="text-sm text-gray-300">定期数据更新</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111827] border border-white/5">
             <Shield className="w-4 h-4 text-violet-400" />

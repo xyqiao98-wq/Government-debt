@@ -73,7 +73,7 @@ export function Footer() {
             </div>
 
             <div className="text-sm text-gray-500">
-              © 2025 华泰固收团队 · 数据驱动决策
+              © 华泰固收团队 · 数据驱动决策
             </div>
           </div>
         </div>

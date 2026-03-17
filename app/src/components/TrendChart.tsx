@@ -165,6 +165,7 @@ export function TrendChart() {
         <span className="text-xs text-gray-500">(2020-2025年)</span>
       </div>
       <div ref={chartRef} className="w-full h-[280px]" />
+      <div className="text-xs text-gray-500 mt-2">2025年发债城投主体尚未披露年报数据，有息债务数据待更新</div>
     </motion.div>
   );
 }

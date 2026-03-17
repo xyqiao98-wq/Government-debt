@@ -859,10 +859,10 @@ export const getRiskColor = (riskLevel: string): string => {
 // 获取风险等级文本（中性表述）
 export const getRiskText = (riskLevel: string): string => {
   const riskTextMap = {
-    low: '风险偏低',
-    medium: '风险适中',
-    high: '风险偏高',
-    critical: '风险较高',
+    low: '债务率偏低',
+    medium: '债务率适中',
+    high: '债务率偏高',
+    critical: '债务率较高',
   };
   return riskTextMap[riskLevel as keyof typeof riskTextMap] || '未知';
 };
@@ -883,8 +883,8 @@ export const debtStructureData = [
 
 // 风险等级分布
 export const riskDistributionData = [
-  { name: '风险偏低', value: 4, color: '#10b981' },
-  { name: '风险适中', value: 8, color: '#f59e0b' },
-  { name: '风险偏高', value: 2, color: '#f97316' },
-  { name: '风险较高', value: 17, color: '#dc2626' },
+  { name: '债务率偏低', value: 4, color: '#10b981' },
+  { name: '债务率适中', value: 8, color: '#f59e0b' },
+  { name: '债务率偏高', value: 2, color: '#f97316' },
+  { name: '债务率较高', value: 17, color: '#dc2626' },
 ];

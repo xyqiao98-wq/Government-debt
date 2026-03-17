@@ -130,6 +130,7 @@ export function HiddenDebtBarChart() {
         <span className="text-xs text-gray-500">(2018-2025年)</span>
       </div>
       <div ref={chartRef} className="w-full h-[280px]" />
+      <div className="text-xs text-gray-500 mt-2">按照官方公布时点数推算</div>
     </motion.div>
   );
 }
