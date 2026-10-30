@@ -4,9 +4,9 @@ import { defineConfig } from "vite"
 import { inspectAttr } from 'kimi-plugin-inspect-react'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: './',
-  plugins: [inspectAttr(), react()],
+  plugins: [react(), ...(mode === 'development' ? [inspectAttr()] : [])],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -52,4 +52,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

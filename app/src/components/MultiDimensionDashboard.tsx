@@ -49,7 +49,7 @@ const debtMetrics: MetricConfig[] = [
 const allMetrics = [...economicMetrics, ...fiscalMetrics, ...debtMetrics];
 
 // 获取指标显示值
-const getMetricValue = (provinceData: any, metricKey: string): number | string => {
+const getMetricValue = (provinceData: ProvinceMasterData, metricKey: string): number | string => {
   if (metricKey in provinceData.macro) {
     return provinceData.macro[metricKey as keyof typeof provinceData.macro] ?? 0;
   }
@@ -80,7 +80,7 @@ export function MultiDimensionDashboard() {
   const [sortField, setSortField] = useState<string>('gdp');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedYear, setSelectedYear] = useState<number>(2024);
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
 
   // 获取当前分类的指标
   const currentMetrics = useMemo(() => {
@@ -415,8 +415,8 @@ export function MultiDimensionDashboard() {
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-sm">!</div>
             <div className="text-sm text-amber-300">
-              <span className="font-medium">2025年末城投带息债务尚未披露：</span>
-              2025年债务指标暂待更新，当前显示数据为2024年债务指标的预测值或占位数据。
+              <span className="font-medium">2025年数据口径：</span>
+              债务余额与综合财力统一采用2025年数据。部分省份综合财力分项尚不完整，债务率可能偏高。
             </div>
           </div>
         </div>
@@ -499,7 +499,7 @@ export function MultiDimensionDashboard() {
         </p>
         <p>
           <span className="font-medium text-gray-400">数据口径：</span>
-          所有数据均为2024年最新数据，债务率为债务余额与综合财力的比值，宽口径债务率包含城投带息债务。
+          本表按所选年度展示，债务余额采用当年末数据。窄口径债务率=政府债务/综合财力，宽口径债务率=(政府债务+城投债务)/综合财力，百分比均乘以100。
         </p>
       </div>
     </motion.div>

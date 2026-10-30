@@ -141,7 +141,7 @@ export function PolicyTimeline() {
                           <span className="text-sm bg-white/5 text-gray-300 px-3 py-1 rounded-md">
                             {policy.documentNumber}
                           </span>
-                          <span className="text-sm">发文机关：{policy.issuingAuthority}</span>
+                          {policy.issuingAuthority && <span className="text-sm">发文机关：{policy.issuingAuthority}</span>}
                         </div>
                       </div>
 

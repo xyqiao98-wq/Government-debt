@@ -1,3 +1,4 @@
+import { debtBasisNote } from '@/data/debtRefresh';
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as echarts from 'echarts';
@@ -34,16 +35,18 @@ export function ScatterChart() {
         textStyle: {
           color: '#f9fafb',
         },
-        formatter: (params: any) => {
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams[0] : rawParams;
+          const values = Array.isArray(params.value) ? params.value.map(Number) : [];
           return `
             <div style="font-weight:600;margin-bottom:8px;">${params.name}</div>
             <div style="display:grid;grid-template-columns:auto auto;gap:4px 12px;font-size:12px;">
-              <span style="color:#9ca3af;">综合财力 (2024):</span>
-              <span>${params.value[0].toLocaleString()}亿元</span>
-              <span style="color:#9ca3af;">调整后债务率 (2024):</span>
-              <span style="color:${getDebtHeatmapColor(params.value[1])};font-weight:600;">${params.value[1].toFixed(2)}%</span>
-              <span style="color:#9ca3af;">总债务 (2024):</span>
-              <span>${(params.value[2] / 10000).toFixed(2)}万亿</span>
+              <span style="color:#9ca3af;">综合财力 (2025):</span>
+              <span>${values[0].toLocaleString()}亿元</span>
+              <span style="color:#9ca3af;">调整后债务率（2025年末）:</span>
+              <span style="color:${getDebtHeatmapColor(values[1])};font-weight:600;">${values[1].toFixed(2)}%</span>
+              <span style="color:#9ca3af;">总债务（2025年末）:</span>
+              <span>${(values[2] / 10000).toFixed(2)}万亿</span>
             </div>
           `;
         },
@@ -141,8 +144,9 @@ export function ScatterChart() {
       <div className="flex items-center gap-3 mb-6">
         <ScatterIcon className="w-5 h-5 text-violet-400" />
         <h3 className="text-lg font-semibold text-white">财力与债务关系</h3>
-        <span className="text-xs text-gray-500">(2024年末)</span>
+        <span className="text-xs text-gray-500">（2025年末）</span>
       </div>
+      <p className="mb-3 text-xs leading-5 text-gray-500">{debtBasisNote}</p>
       <div ref={chartRef} className="w-full h-[280px]" />
     </motion.div>
   );

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "data:build": "node scripts/build-debt-data.mjs && node scripts/build-city-data.mjs",
+    "data:test": "node --test scripts/build-city-data.test.mjs scripts/debt-data.test.mjs",
+    "verify": "npm run data:test && npm run data:build && npm run lint && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

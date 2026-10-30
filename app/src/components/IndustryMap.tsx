@@ -230,7 +230,7 @@ interface IndustryPolicyCardProps {
   onClick: () => void;
 }
 
-function IndustryPolicyCard({ province, tags, desc, detail: _detail, onClick }: IndustryPolicyCardProps) {
+function IndustryPolicyCard({ province, tags, desc, onClick }: IndustryPolicyCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -525,7 +525,7 @@ export function IndustryMap() {
 
     const initChart = () => {
       // 使用静态导入的地图数据
-      echarts.registerMap('china', chinaGeoJson as any);
+      echarts.registerMap('china', chinaGeoJson as Parameters<typeof echarts.registerMap>[1]);
 
       // 再次检查组件是否仍挂载且元素存在
       if (!mounted || !chartRef.current) {
@@ -626,7 +626,7 @@ export function IndustryMap() {
       resizeObserverRef.current.observe(chartElement);
 
       // 鼠标悬停事件
-      chartInstance.current.on('mouseover', (params: any) => {
+      chartInstance.current.on('mouseover', (params: echarts.ECElementEvent) => {
         const province = findProvinceByFullName(params.name);
         if (province) {
           setHoveredProvince(province);
@@ -638,7 +638,7 @@ export function IndustryMap() {
       });
 
       // 点击事件
-      chartInstance.current.on('click', (params: any) => {
+      chartInstance.current.on('click', (params: echarts.ECElementEvent) => {
         const province = findProvinceByFullName(params.name);
         if (province) {
           setSelectedProvince(province);
@@ -699,6 +699,7 @@ export function IndustryMap() {
     let retryCount = 0;
     const maxRetries = 50; // 最多重试50次（5秒）
 
+    let disposeCharts: (() => void) | undefined;
     const initChartsWhenReady = () => {
       if (!mounted || !economicChartRef.current || !capitalChartRef.current) {
         return;
@@ -725,7 +726,7 @@ export function IndustryMap() {
       }
 
       // 容器尺寸有效，初始化图表
-      initCharts();
+      disposeCharts = initCharts();
     };
 
     const initCharts = () => {
@@ -742,12 +743,13 @@ export function IndustryMap() {
         axisPointer: {
           type: 'cross'
         },
-        formatter: (params: any) => {
-          const gdpParam = params.find((p: any) => p.seriesName === '2025 GDP');
-          const taxParam = params.find((p: any) => p.seriesName === '2024 税收收入');
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams : [rawParams];
+          const gdpParam = params.find((p) => p.seriesName === '2025 GDP');
+          const taxParam = params.find((p) => p.seriesName === '2024 税收收入');
           let result = `${params[0].name}<br/>`;
-          if (gdpParam) result += `${gdpParam.marker} ${gdpParam.seriesName}: ${gdpParam.value.toLocaleString()} 亿元<br/>`;
-          if (taxParam) result += `${taxParam.marker} ${taxParam.seriesName}: ${taxParam.value.toLocaleString()} 亿元`;
+          if (gdpParam) result += `${gdpParam.marker} ${gdpParam.seriesName}: ${Number(gdpParam.value).toLocaleString()} 亿元<br/>`;
+          if (taxParam) result += `${taxParam.marker} ${taxParam.seriesName}: ${Number(taxParam.value).toLocaleString()} 亿元`;
           return result;
         }
       },
@@ -844,9 +846,10 @@ export function IndustryMap() {
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
-        formatter: (params: any) => {
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams : [rawParams];
           const param = params[0];
-          return `${param.name}<br/>${param.marker} 上市公司数量: ${param.value.toLocaleString()} 家`;
+          return `${param.name}<br/>${param.marker} 上市公司数量: ${Number(param.value).toLocaleString()} 家`;
         }
       },
       grid: {
@@ -929,7 +932,12 @@ export function IndustryMap() {
         capitalChartInstance.current = null;
       }
     };
-  }
+    };
+    initChartsWhenReady();
+    return () => {
+      mounted = false;
+      disposeCharts?.();
+    };
   }, []);
 
   // 获取Top10省份（按上市公司数量）

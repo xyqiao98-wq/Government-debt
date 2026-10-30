@@ -1,3 +1,4 @@
+import { debtBasisNote } from '@/data/debtRefresh';
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as echarts from 'echarts';
@@ -32,12 +33,13 @@ export function PieChart() {
         textStyle: {
           color: '#f9fafb',
         },
-        formatter: (params: any) => {
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams[0] : rawParams;
           return `
             <div style="font-weight:600;margin-bottom:8px;">${params.name}</div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${params.color};"></span>
-              <span style="color:#9ca3af;">金额 (2024年末):</span>
+              <span style="color:#9ca3af;">金额 （2025年末）:</span>
               <span style="font-weight:600;">${params.value}万亿元</span>
               <span style="color:#9ca3af;">占比:</span>
               <span style="font-weight:600;">${params.percent}%</span>
@@ -122,8 +124,9 @@ export function PieChart() {
       <div className="flex items-center gap-3 mb-6">
         <PieIcon className="w-5 h-5 text-emerald-400" />
         <h3 className="text-lg font-semibold text-white">债务结构</h3>
-        <span className="text-xs text-gray-500">(2024年末)</span>
+        <span className="text-xs text-gray-500">（2025年末）</span>
       </div>
+      <p className="mb-3 text-xs leading-5 text-gray-500">{debtBasisNote}</p>
       <div ref={chartRef} className="w-full h-[280px]" />
     </motion.div>
   );

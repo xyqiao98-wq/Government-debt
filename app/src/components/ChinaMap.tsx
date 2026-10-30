@@ -1,3 +1,4 @@
+import { debtBasisNote } from '@/data/debtRefresh';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as echarts from 'echarts';
@@ -157,7 +158,7 @@ function ProvinceDetail({ province, onClose }: ProvinceDetailProps) {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white">{province.province}</h2>
-            <p className="text-sm text-gray-500 mt-1">数据口径：2024年末</p>
+            <p className="text-sm text-gray-500 mt-1">{debtBasisNote}</p>
           </div>
           <button
             onClick={onClose}
@@ -182,7 +183,7 @@ function ProvinceDetail({ province, onClose }: ProvinceDetailProps) {
 
         {/* Debt Data */}
         <div className="space-y-4 mb-6">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">债务数据 (2024年末)</h3>
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">债务数据（2025年末）</h3>
           
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-lg bg-white/5">
@@ -207,7 +208,7 @@ function ProvinceDetail({ province, onClose }: ProvinceDetailProps) {
 
         {/* Debt Ratio */}
         <div className="space-y-4 mb-6">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">债务率 (2024年末)</h3>
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">债务率（2025年末）</h3>
           
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-lg bg-white/5">
@@ -322,10 +323,11 @@ export function ChinaMap() {
     // 确保 DOM 元素存在
     const chartElement = chartRef.current;
     if (!chartElement) return;
+    const handleResize = () => chartInstance.current?.resize();
 
     const initChart = async () => {
       try {
-        const response = await fetch('/china.json');
+        const response = await fetch(`${import.meta.env.BASE_URL}china.json`);
         if (!response.ok) {
           throw new Error('Failed to load China map data');
         }
@@ -417,7 +419,7 @@ export function ChinaMap() {
         setLoading(false);
 
         // 鼠标悬停事件
-        chartInstance.current.on('mouseover', (params: any) => {
+        chartInstance.current.on('mouseover', (params: echarts.ECElementEvent) => {
           const province = findProvinceByFullName(params?.name);
           if (province) {
             setHoveredProvince(province);
@@ -429,22 +431,14 @@ export function ChinaMap() {
         });
 
         // 点击事件
-        chartInstance.current.on('click', (params: any) => {
+        chartInstance.current.on('click', (params: echarts.ECElementEvent) => {
           const province = findProvinceByFullName(params?.name);
           if (province) {
             setSelectedProvince(province);
           }
         });
 
-        const handleResize = () => {
-          chartInstance.current?.resize();
-        };
         window.addEventListener('resize', handleResize);
-
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          chartInstance.current?.dispose();
-        };
       } catch (error) {
         console.error('Failed to load map:', error);
         if (mounted) {
@@ -458,6 +452,7 @@ export function ChinaMap() {
     // 清理函数
     return () => {
       mounted = false;
+      window.removeEventListener('resize', handleResize);
       if (chartInstance.current) {
         chartInstance.current.dispose();
         chartInstance.current = null;
@@ -481,11 +476,11 @@ export function ChinaMap() {
         className="py-16 px-6"
       >
         <div className="max-w-[1400px] mx-auto">
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex flex-wrap items-center gap-3 mb-8">
             <MapPin className="w-6 h-6 text-blue-400" />
             <h2 className="text-2xl font-bold text-white">各省债务分布</h2>
             <span className="text-sm text-gray-500 ml-4">按宽口径债务率着色 · 悬停查看名片 · 点击查看详情</span>
-            <span className="text-xs text-gray-600 ml-auto">数据口径：2024年末</span>
+            <span className="w-full text-xs leading-5 text-gray-500">{debtBasisNote}</span>
           </div>
 
           <div className="grid lg:grid-cols-4 gap-6">
@@ -506,7 +501,7 @@ export function ChinaMap() {
                 <AlertCircle className="w-5 h-5 text-red-400" />
                 <h3 className="text-lg font-semibold text-white">宽口径债务率 Top 10</h3>
               </div>
-              <div className="text-xs text-gray-500 mb-4">数据口径：2024年末</div>
+              <div className="text-xs text-gray-500 mb-4">{debtBasisNote}</div>
 
               <div className="space-y-3 max-h-[480px] overflow-y-auto">
                 {top10Provinces.map((province, index) => (

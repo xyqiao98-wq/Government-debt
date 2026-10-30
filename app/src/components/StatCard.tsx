@@ -56,7 +56,7 @@ export function StatCard({
   delay = 0,
   dataYear = '2024',
 }: StatCardProps) {
-  const animatedValue = useCountUp(value, 2000, 0, 1);
+  const animatedValue = useCountUp(value, 2000, 0, 2);
   const colors = colorMap[color];
 
   const getChangeIcon = () => {

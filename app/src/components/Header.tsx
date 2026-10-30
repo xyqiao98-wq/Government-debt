@@ -22,7 +22,7 @@ export function Header() {
             <TrendingUp className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-lg font-bold text-white leading-tight">
+            <h1 className="text-lg font-bold text-white leading-tight border-b border-blue-500/50 pb-1">
               地方债务监测平台
             </h1>
             <span className="text-xs text-blue-400">华泰固收团队</span>

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Database, Shield, AlertTriangle } from 'lucide-react';
+import { fiscal2025Sources } from '@/data/fiscal2025';
 
 export function Footer() {
   return (
@@ -20,10 +21,13 @@ export function Footer() {
             <div>
               <h4 className="text-sm font-semibold text-white mb-2">数据来源</h4>
               <ul className="space-y-1 text-sm text-gray-400">
-                <li>各省2024年预算执行报告</li>
+                <li>各省历年预算执行报告；2025年政府债务采用财政部决算</li>
                 <li>各省财政厅公开数据</li>
                 <li>国家统计局</li>
                 <li>Wind金融终端</li>
+                <li>华泰固收城投有息债务数据库（20260630）</li>
+                <li><a className="hover:text-blue-300 underline" href={fiscal2025Sources.generalDebt} target="_blank" rel="noreferrer">财政部2025年一般债务分地区余额</a></li>
+                <li><a className="hover:text-blue-300 underline" href={fiscal2025Sources.specialDebt} target="_blank" rel="noreferrer">财政部2025年专项债务分地区余额</a></li>
               </ul>
             </div>
           </div>
@@ -40,7 +44,7 @@ export function Footer() {
                 <li>窄口径债务率 = 政府债务 / 综合财力</li>
                 <li>宽口径债务率 = (政府债务+城投债务) / 综合财力</li>
                 <li>综合财力=一般预算财力+政府性基金预算财力，其中一般预算财力=全省一般预算收入+中央预算补助收入+上年结余+调入资金+调入预算稳定调节基金-上解中央支出-调出资金，政府性基金预算财力=全省政府性基金收入+中央政府性基金预算补助收入+上年结余+调入资金-上解中央支出-调出资金</li>
-                <li>由于债务率需要综合财力、城投带息债务数据参与计算，目前各省细分财政数据及城投带息债务尚未披露完全，故部分数据尚未更新</li>
+                <li>省级债务及财力统一采用2025年口径，历史数据按对应年度计算。部分省份综合财力分项尚不完整，债务率可能偏高。</li>
               </ul>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { refreshAnnualDebt } from './debtRefresh.ts';
 // Auto-generated from Excel: 各省财政及债务精简版数据.xlsx
 // Generated on 2026-03-11T11:44:16.804Z
 
@@ -2621,12 +2622,6 @@ export const historicalDebtData = [
     govDebtRiskColor: '黄',
     adjustedDebtRiskColor: '红',
   },
-,
-,
-,
-,
-,
-,
 
 
   {
@@ -3062,7 +3057,7 @@ export const historicalDebtData = [
     adjustedDebtRatio: 0, // 暂无数据
     govDebtRiskColor: '绿', // 默认绿色
     adjustedDebtRiskColor: '绿', // 默认绿色
-  }];
+  }].map(item => item ? refreshAnnualDebt(item.province, item.year, item) : item);
 
 // Helper functions
 export function getHistoricalDataByYear(year: number): HistoricalDebtData[] {

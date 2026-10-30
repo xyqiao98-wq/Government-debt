@@ -1,3 +1,4 @@
+import { debtBasisNote } from '@/data/debtRefresh';
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import * as echarts from 'echarts';
@@ -33,18 +34,19 @@ export function Top10TotalDebtStackedBarChart() {
         textStyle: {
           color: '#f9fafb',
         },
-        formatter: (params: any) => {
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams : [rawParams];
           let result = `<div style="font-weight:600;margin-bottom:8px;">${params[0].name}</div>`;
           let total = 0;
-          params.forEach((item: any) => {
+          params.forEach((item) => {
             result += `
               <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
                 <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};"></span>
                 <span style="color:#9ca3af;">${item.seriesName}:</span>
-                <span style="font-weight:600;">${item.value.toLocaleString()}亿元</span>
+                <span style="font-weight:600;">${Number(item.value).toLocaleString()}亿元</span>
               </div>
             `;
-            total += item.value;
+            total += Number(item.value);
           });
           result += `
             <div style="border-top:1px solid rgba(255,255,255,0.1);margin-top:8px;padding-top:8px;">
@@ -158,8 +160,9 @@ export function Top10TotalDebtStackedBarChart() {
       <div className="flex items-center gap-3 mb-6">
         <Layers className="w-5 h-5 text-purple-400" />
         <h3 className="text-lg font-semibold text-white">总债务规模 Top 10</h3>
-        <span className="text-xs text-gray-500">(2024年末 · 亿元)</span>
+        <span className="text-xs text-gray-500">（2025年末 · 亿元）</span>
       </div>
+      <p className="mb-3 text-xs leading-5 text-gray-500">{debtBasisNote}</p>
       <div ref={chartRef} className="w-full h-[280px]" />
     </motion.div>
   );

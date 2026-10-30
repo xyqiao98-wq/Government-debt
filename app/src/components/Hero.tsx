@@ -34,10 +34,10 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight border border-blue-500/50 rounded-xl px-4 py-3"
         >
           全国地方债务
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
+          <span className="text-white">
             监测平台
           </span>
         </motion.h1>

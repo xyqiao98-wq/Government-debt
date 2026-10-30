@@ -1,18 +1,12 @@
 import type { ProvinceDebtData, NationalOverview } from '@/types';
+import { cityInvestmentDebtByPeriod } from './cityInvestmentDebt.ts';
+import { debtPeriod, debtPeriodLabel, nationalCityInvestmentDebt, riskLevel } from './debtRefresh.ts';
+import { fiscal2025 } from './fiscal2025.ts';
 
-// 全国概览数据 (2024年末数据，单位：亿元)
-export const nationalOverview: NationalOverview = {
-  localBondBalance: 47.39, // 万亿元
-  cityInvestDebt: 69.60, // 万亿元
-  growthRate: 12.5,
-  avgDebtRatio: 143.15,
-  updateTime: '2024年12月',
-};
-
-// 各省债务数据 (2024年末债务数据，2025年经济数据)
+// 基础数据（2024年政府债务及综合财力、2025年经济数据）；下方统一更新城投债务和债务率。
 // 债务数据来源：各省2024年预算执行报告
 // 经济数据来源：国家统计局、各省统计局
-export const provinceDebtData: ProvinceDebtData[] = [
+const provinceDebtBase: ProvinceDebtData[] = [
   {
     province: '江苏',
     localBondBalance: 28227.61,
@@ -821,15 +815,41 @@ export const provinceDebtData: ProvinceDebtData[] = [
   },
 ];
 
-// 债务趋势数据 (万亿元) - 正序 2020-2024
+// 当前地图统一采用2025年政府债务、财力及2025年末城投债务。
+export const provinceDebtData: ProvinceDebtData[] = provinceDebtBase.map(province => {
+  const source = fiscal2025[province.province];
+  const localBondBalance = source.generalDebt + source.specialDebt;
+  const comprehensiveFinance = source.comprehensiveFinance;
+  const cityInvestDebt = cityInvestmentDebtByPeriod[debtPeriod][province.province];
+  const totalDebt = localBondBalance + cityInvestDebt;
+  const debtRatio = localBondBalance / comprehensiveFinance * 100;
+  const adjustedDebtRatio = totalDebt / comprehensiveFinance * 100;
+  return { ...province, localBondBalance, comprehensiveFinance, cityInvestDebt, totalDebt, debtRatio, adjustedDebtRatio, riskLevel: riskLevel(adjustedDebtRatio) };
+});
+const totalDebtOrder = [...provinceDebtData].sort((a, b) => b.totalDebt - a.totalDebt);
+const ratioOrder = [...provinceDebtData].sort((a, b) => a.adjustedDebtRatio - b.adjustedDebtRatio);
+provinceDebtData.forEach(province => {
+  province.totalDebtRank = totalDebtOrder.indexOf(province) + 1;
+  province.adjustedDebtRatioRank = ratioOrder.indexOf(province) + 1;
+});
+
+export const nationalOverview: NationalOverview = {
+  localBondBalance: provinceDebtData.reduce((sum, province) => sum + province.localBondBalance, 0) / 10000,
+  cityInvestDebt: nationalCityInvestmentDebt(debtPeriod),
+  growthRate: (nationalCityInvestmentDebt(debtPeriod) / nationalCityInvestmentDebt('2024-12-31') - 1) * 100,
+  avgDebtRatio: provinceDebtData.reduce((sum, province) => sum + province.debtRatio, 0) / provinceDebtData.length,
+  updateTime: debtPeriodLabel,
+};
+
+// 全国同年末债务趋势（万亿元），不混用2026年6月末数据。
 export const trendData = [
   { year: '2020', govDebt: 25.60, ctDebt: 46.77 },
   { year: '2021', govDebt: 29.21, ctDebt: 50.72 },
   { year: '2022', govDebt: 33.73, ctDebt: 56.79 },
   { year: '2023', govDebt: 39.04, ctDebt: 62.98 },
   { year: '2024', govDebt: 47.39, ctDebt: 69.60 },
-  { year: '2025', govDebt: 54.65, ctDebt: NaN },
-];
+  { year: '2025', govDebt: nationalOverview.localBondBalance, ctDebt: NaN },
+].map(item => ({ ...item, ctDebt: nationalCityInvestmentDebt(`${item.year}-12-31`) }));
 
 // 隐债规模数据 (万亿元) - 2018-2025
 export const hiddenDebtData = [
@@ -877,14 +897,19 @@ export const getDebtHeatmapColor = (adjustedDebtRatio: number): string => {
 
 // 债务结构数据 (万亿元)
 export const debtStructureData = [
-  { name: '政府性债务', value: 47.39, color: '#3b82f6' },
-  { name: '城投带息债务', value: 69.60, color: '#dc2626' },
+  { name: '政府性债务', value: nationalOverview.localBondBalance, color: '#3b82f6' },
+  { name: '城投带息债务', value: nationalOverview.cityInvestDebt, color: '#dc2626' },
 ];
 
 // 风险等级分布
-export const riskDistributionData = [
-  { name: '债务率偏低', value: 4, color: '#10b981' },
-  { name: '债务率适中', value: 8, color: '#f59e0b' },
-  { name: '债务率偏高', value: 2, color: '#f97316' },
-  { name: '债务率较高', value: 17, color: '#dc2626' },
-];
+const riskDistributionConfig = {
+  low: { name: '债务率偏低', color: '#10b981' },
+  medium: { name: '债务率适中', color: '#f59e0b' },
+  high: { name: '债务率偏高', color: '#f97316' },
+  critical: { name: '债务率较高', color: '#dc2626' },
+} as const;
+
+export const riskDistributionData = (Object.keys(riskDistributionConfig) as Array<keyof typeof riskDistributionConfig>).map((level) => ({
+  ...riskDistributionConfig[level],
+  value: provinceDebtData.filter((province) => province.riskLevel === level).length,
+}));

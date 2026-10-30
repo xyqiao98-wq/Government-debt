@@ -1,0 +1,105 @@
+{
+  "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "defaultYear": 2024,
+  "sourceWorkbook": "【华泰固收】2019-2024省地县经济财政债务数据库.xlsx；【华泰固收】城投有息债务-20260630.xlsx（同年末城投债务）",
+  "metrics": [
+    {
+      "key": "gdp",
+      "label": "GDP",
+      "unit": "亿元"
+    },
+    {
+      "key": "generalBudgetRevenue",
+      "label": "一般公共预算收入",
+      "unit": "亿元"
+    },
+    {
+      "key": "governmentFundRevenue",
+      "label": "政府性基金收入",
+      "unit": "亿元"
+    },
+    {
+      "key": "governmentDebt",
+      "label": "地方政府债务余额",
+      "unit": "亿元"
+    },
+    {
+      "key": "cityInvestmentDebt",
+      "label": "城投债务余额",
+      "unit": "亿元"
+    },
+    {
+      "key": "debtRatio",
+      "label": "窄口径债务率",
+      "unit": "%"
+    },
+    {
+      "key": "adjustedDebtRatio",
+      "label": "宽口径债务率",
+      "unit": "%"
+    }
+  ],
+  "coverage": {
+    "2019": {
+      "records": 365,
+      "completeCore": 279,
+      "metricCoverage": {
+        "gdp": 331,
+        "generalBudgetRevenue": 292,
+        "governmentFundRevenue": 284
+      }
+    },
+    "2020": {
+      "records": 365,
+      "completeCore": 287,
+      "metricCoverage": {
+        "gdp": 332,
+        "generalBudgetRevenue": 293,
+        "governmentFundRevenue": 293
+      }
+    },
+    "2021": {
+      "records": 365,
+      "completeCore": 277,
+      "metricCoverage": {
+        "gdp": 331,
+        "generalBudgetRevenue": 292,
+        "governmentFundRevenue": 280
+      }
+    },
+    "2022": {
+      "records": 365,
+      "completeCore": 288,
+      "metricCoverage": {
+        "gdp": 363,
+        "generalBudgetRevenue": 314,
+        "governmentFundRevenue": 288
+      }
+    },
+    "2023": {
+      "records": 365,
+      "completeCore": 279,
+      "metricCoverage": {
+        "gdp": 348,
+        "generalBudgetRevenue": 310,
+        "governmentFundRevenue": 287
+      }
+    },
+    "2024": {
+      "records": 365,
+      "completeCore": 289,
+      "metricCoverage": {
+        "gdp": 328,
+        "generalBudgetRevenue": 308,
+        "governmentFundRevenue": 293
+      }
+    }
+  }
+}

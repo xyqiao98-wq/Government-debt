@@ -32,10 +32,11 @@ export function HiddenDebtChart() {
         textStyle: {
           color: '#f9fafb',
         },
-        formatter: (params: any) => {
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams : [rawParams];
           const item = params[0];
           return `
-            <div style="font-weight:600;margin-bottom:8px;">${item.axisValue}年</div>
+            <div style="font-weight:600;margin-bottom:8px;">${item.name}年</div>
             <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
               <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};"></span>
               <span style="color:#9ca3af;">隐债规模:</span>

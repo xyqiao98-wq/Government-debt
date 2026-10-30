@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# 地方债务与地市经济财政研究平台
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+基于 React、TypeScript、Vite 和 ECharts 的静态研究站点。省级债务、地市经济财政与政策脉络视图都在浏览器端运行，不需要数据库或后端服务。
 
-Currently, two official plugins are available:
+## 本地运行
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```powershell
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 年度数据更新
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. 将新的 Excel 放入项目根目录下的 `data/raw/<年份>/`。
+2. 如果工作表名称或字段发生变化，先更新 `scripts/build-city-data.mjs` 中的字段映射。
+3. 在 `app` 目录运行：
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```powershell
+npm run data:test
+npm run data:build
+npm run verify
 ```
+
+也可以在项目根目录双击 `deploy.bat`。该脚本只做本地校验和构建，不会修改 Git 身份、远程地址或执行强制推送。
+
+生成文件包括：
+
+- `public/data/metadata.json`：年份、指标和覆盖率。
+- `public/data/cities/<年份>.json`：网页按需加载的年度地市数据。
+- `../data/generated/validation-report.json`：本地数据校验报告。
+
+原始 Excel 被 `.gitignore` 排除，不应复制到 `public`。公开网站只发布筛选、标准化后的 JSON。
+
+## 数据规则
+
+- 地区通过标准化后的省份和城市名称生成稳定 `regionKey`。
+- 地级市、自治州、地区、盟、省直辖县级单位和兵团城市分别标记。
+- 空白、横线及不可确认的零值保存为 `null`。
+- 缺失值不参与排名、同比和比率计算。
+- 页面自动从 `metadata.json` 获取可用年份，新增年份无需修改 React 代码。
+
+## 发布
+
+网站通过 Cloudflare Pages 关联 GitHub 仓库发布。推荐设置如下：
+
+| 配置项 | 值 |
+| --- | --- |
+| 仓库 | `xyqiao98-wq/Government-debt` |
+| 生产分支 | `main` |
+| 根目录 | `app` |
+| 构建命令 | `npm run build` |
+| 构建输出目录 | `dist` |
+
+启用生产分支自动部署后，每次推送到 `main` 都会触发 Cloudflare 构建。在 Cloudflare 的 Workers & Pages 中打开对应项目，在部署记录中确认最新提交构建成功；若自动部署关闭，可手动重试部署最新提交。
+
+生成数据应先在本地校验并提交，原始工作簿不上传。云端直接构建已生成的数据，无需运行依赖本地 Excel 的 `data:build` 或 `verify`。
+
+## 2026年10月30日债务数据更新
+
+当前省级视图统一采用2025年口径，不使用2026年6月末城投债务。
+
+- 综合财力：用户提供的2025年截图末列，逐省原值录入 `src/data/fiscal2025.ts`。部分省份补助、结转等分项留空，保留原始总值，不推算补齐，可能导致债务率偏高。
+- 政府债务：财政部2025年全国财政决算的31省一般债务余额加专项债务余额（2026-09-16发布），采用年末余额而非限额或发行额。省份行已含计划单列市，不重复累加；新疆按财政部口径含兵团。
+- 城投债务：项目根目录 `【华泰固收】城投有息债务-20260630.xlsx` 中 `统计（省份）` 的2025年12月31日列。该文件是资料版本，不代表使用2026年数据。
+- 窄口径债务率 = 政府债务 / 综合财力 × 100%；宽口径债务率 = (政府债务 + 城投债务) / 综合财力 × 100%。全国平均窄口径为31省算术平均。
+- 总债务、宽窄债务率、总债务排名、宽口径排名、风险分层、全国统计及趋势均随数据重算。旧版写死的同比已移除，城投债务同比由同口径年度值计算。
+- 省级历史视图使用新表中对应年度12月31日的城投债务；2025年同步使用截图财力及财政部决算政府债务，2019—2024年保留原年度政府债务和财力。
+- 地市视图仍为2019—2024年：按省份和地市精确匹配相应年末债务，不将省级平台分摊到地市；未匹配地区债务留空。综合财力沿用原库（部分地市为简化口径）。地市债务率以百分数输出，已修正原先少乘100的问题。没有用省级2025年财力替代地市财力。
+- 保留原始数值精度，仅页面显示四舍五入。全国2025年末城投债务703052.6043622972亿元，与Excel总计一致；一般债务175123.66亿元、专项债务373108.30亿元，与财政部决算总计一致。隐债规模为独立口径，本次不变。
+
+官方来源：
+
+- [2025年地方政府一般债务分地区余额表](https://yss.mof.gov.cn/2025zyjs/202609/t20260916_3997523.htm)
+- [2025年地方政府专项债务分地区余额表](https://yss.mof.gov.cn/2025zyjs/202609/t20260916_3997518.htm)
+
+更新原始工作簿后，在 `app` 中运行 `npm run data:build`、`npm run data:test`、`npm run build`。数据构建需要两个原始工作簿；网站部署使用已提交的 `src/data/cityInvestmentDebt.ts`、`src/data/fiscal2025.ts`、源代码和 `public/data/`，不上传Excel。

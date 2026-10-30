@@ -25,9 +25,10 @@ export function TrendChart() {
         textStyle: {
           color: '#f9fafb',
         },
-        formatter: (params: any) => {
-          let result = `<div style="font-weight:600;margin-bottom:8px;">${params[0]?.axisValue ?? ''}年</div>`;
-          params.forEach((item: any) => {
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams : [rawParams];
+          let result = `<div style="font-weight:600;margin-bottom:8px;">${params[0]?.name ?? ''}</div>`;
+          params.forEach((item) => {
             const value = item.value;
             const displayValue = value === null || isNaN(Number(value)) ? '-' : Number(value).toFixed(2);
             const suffix = value === null || isNaN(Number(value)) ? '' : '万亿元';
@@ -162,10 +163,10 @@ export function TrendChart() {
       <div className="flex items-center gap-3 mb-6">
         <TrendingUp className="w-5 h-5 text-blue-400" />
         <h3 className="text-lg font-semibold text-white">债务趋势</h3>
-        <span className="text-xs text-gray-500">(2020-2025年)</span>
+        <span className="text-xs text-gray-500">(2020—2025年末)</span>
       </div>
       <div ref={chartRef} className="w-full h-[280px]" />
-      <div className="text-xs text-gray-500 mt-2">2025年发债城投主体尚未披露年报数据，有息债务数据待更新</div>
+      <div className="text-xs text-gray-500 mt-2">各期均为年末数据 · 数据来源：财政部、华泰固收</div>
     </motion.div>
   );
 }

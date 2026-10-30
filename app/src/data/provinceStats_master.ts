@@ -1,3 +1,4 @@
+import { refreshAnnualDebt } from './debtRefresh.ts';
 // 2024年全国31个省份宏观经济与债务数据（合并版）
 // 数据来源：
 // 1. all_province_macro_data.csv - 宏观经济指标
@@ -813,7 +814,7 @@ export const provinceStatsMaster: ProvinceMasterData[] = [
       adjustedDebtRiskColor: "黄",
     },
   },
-];
+].map(item => ({ ...item, debt: refreshAnnualDebt(item.province, item.year, item.debt) }));
 
 // 按省份名称查找数据
 export function getProvinceData(provinceName: string): ProvinceMasterData | undefined {

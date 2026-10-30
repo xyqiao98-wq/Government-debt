@@ -23,12 +23,12 @@ const metricOptions = [
 const allProvinces = Array.from(new Set((historicalDebtData?.filter((item): item is HistoricalDebtData => item !== undefined) ?? []).map(item => item.province))).sort();
 
 // 获取所有年份
-const allYears = [2019, 2020, 2021, 2022, 2023, 2024];
+const allYears = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
 export function HistoricalChart() {
   const chartRef = useRef<HTMLDivElement>(null);
   const [selectedProvinces, setSelectedProvinces] = useState<string[]>(['江苏', '浙江', '广东']);
-  const [selectedMetric, setSelectedMetric] = useState<string>('adjustedDebtRatio');
+  const [selectedMetric, setSelectedMetric] = useState<keyof HistoricalDebtData>('adjustedDebtRatio');
   const [chartInstance, setChartInstance] = useState<echarts.ECharts | null>(null);
 
   // 初始化图表
@@ -69,7 +69,7 @@ export function HistoricalChart() {
         },
         data: provinceData.map(item => ({
           name: item.year.toString(),
-          value: Number((item as any)?.[selectedMetric] ?? 0),
+          value: Number(item[selectedMetric] ?? 0),
         })),
       };
     });
@@ -87,10 +87,11 @@ export function HistoricalChart() {
             color: 'rgba(255, 255, 255, 0.2)',
           },
         },
-        formatter: (params: any) => {
+        formatter: (rawParams: echarts.TooltipComponentFormatterCallbackParams) => {
+          const params = Array.isArray(rawParams) ? rawParams : [rawParams];
           const year = params[0]?.name ?? '';
           let html = `<div class="text-sm font-semibold text-white mb-2">${year}年 · ${currentMetric?.label ?? ''}</div>`;
-          params.forEach((param: any) => {
+          params.forEach((param) => {
             const numValue = Number(param.value); const value = isNaN(numValue) ? '-' : numValue.toFixed(2);
             html += `
               <div class="flex items-center justify-between mb-1">
@@ -176,17 +177,17 @@ export function HistoricalChart() {
     setSelectedProvinces(selectedProvinces.filter(p => p !== province));
   };
 
-  // 获取当前指标的全国平均值（2024年）
+  // 获取当前指标的全国平均值（2025年）
   const getNationalAverage = () => {
-    const data2024 = historicalDebtData.filter((item): item is HistoricalDebtData =>
-      item !== undefined && item.year === 2024);
-    if (data2024.length === 0) return 0;
+    const data2025 = historicalDebtData.filter((item): item is HistoricalDebtData =>
+      item !== undefined && item.year === 2025);
+    if (data2025.length === 0) return 0;
 
-    const sum = data2024.reduce((acc, item) => {
-      return acc + (Number((item as any)?.[selectedMetric] ?? 0));
+    const sum = data2025.reduce((acc, item) => {
+      return acc + (Number(item[selectedMetric] ?? 0));
     }, 0);
 
-    return sum / data2024.length;
+    return sum / data2025.length;
   };
 
   return (
@@ -200,11 +201,11 @@ export function HistoricalChart() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2">历史趋势分析</h2>
-          <p className="text-gray-400">2019-2024年各省地方财政与债务变化趋势</p>
+          <p className="text-gray-400">2019-2025年各省地方财政与债务变化趋势</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#111827] border border-white/5">
           <LineChart className="w-5 h-5 text-blue-400" />
-          <span className="text-sm text-gray-300">数据更新至2024年</span>
+          <span className="text-sm text-gray-300">数据更新至2025年</span>
         </div>
       </div>
 
@@ -217,7 +218,7 @@ export function HistoricalChart() {
               <BarChart3 className="w-4 h-4 text-blue-400" />
               <label className="text-sm font-medium text-gray-300">选择分析指标</label>
             </div>
-            <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+            <Select value={selectedMetric} onValueChange={(value) => setSelectedMetric(value as keyof HistoricalDebtData)}>
               <SelectTrigger className="bg-[#0a0f1c] border-white/10">
                 <SelectValue placeholder="选择指标" />
               </SelectTrigger>
@@ -283,7 +284,7 @@ export function HistoricalChart() {
               <label className="text-sm font-medium text-gray-300">统计概览</label>
             </div>
             <div className="bg-[#0a0f1c] rounded-lg p-4">
-              <div className="text-xs text-gray-400 mb-1">全国平均值 (2024)</div>
+              <div className="text-xs text-gray-400 mb-1">全国平均值 (2025)</div>
               <div className="text-xl font-bold text-white">
                 {isNaN(getNationalAverage()) ? '-' : getNationalAverage().toFixed(2)}
                 <span className="text-sm text-gray-400 ml-1">
@@ -334,7 +335,7 @@ export function HistoricalChart() {
                       (item): item is HistoricalDebtData =>
                         item !== undefined && item.year === year && item.province === province
                     );
-                    const value = data ? Number((data as any)?.[selectedMetric] ?? 0) : 0;
+                    const value = data ? Number(data[selectedMetric] ?? 0) : 0;
                     return (
                       <td key={province} className="text-right py-3 px-4 tabular-nums">
                         <span className="text-white">{isNaN(value) ? '-' : value.toFixed(2)}</span>

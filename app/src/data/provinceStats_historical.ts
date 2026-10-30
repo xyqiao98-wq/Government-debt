@@ -1,3 +1,4 @@
+import { refreshAnnualDebt } from './debtRefresh.ts';
 // Auto-generated historical province data (2019-2025)
 // Merged from all_province_macro_data.csv and 各省债务精简版数据.csv
 // Generated on 2026-03-13
@@ -5458,4 +5459,4 @@ export const provinceStatsHistorical: ProvinceMasterData[] = [
       adjustedDebtRiskColor: "",
     },
   },
-];
+].map(item => ({ ...item, debt: refreshAnnualDebt(item.province, item.year, item.debt) }));

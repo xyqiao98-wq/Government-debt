@@ -1,3 +1,4 @@
+import { debtBasisNote } from '@/data/debtRefresh';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { provinceDebtData, getRiskColor, getRiskText } from '@/data/debtData';
@@ -72,7 +73,7 @@ export function DataTable() {
           <div className="flex items-center gap-3">
             <Table2 className="w-6 h-6 text-blue-400" />
             <h2 className="text-2xl font-bold text-white">各省债务详细数据</h2>
-            <span className="text-xs text-gray-500">(债务数据口径：2024年末)</span>
+            <span className="text-xs text-gray-500">{debtBasisNote}</span>
           </div>
           
           {/* Search */}
@@ -109,7 +110,7 @@ export function DataTable() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <span>政府性债务</span>
-                      <span className="text-xs text-gray-500">(2024)</span>
+                      <span className="text-xs text-gray-500">(2025)</span>
                       {getSortIcon('localBondBalance')}
                     </div>
                   </th>
@@ -119,7 +120,7 @@ export function DataTable() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <span>城投债务</span>
-                      <span className="text-xs text-gray-500">(2024)</span>
+                      <span className="text-xs text-gray-500">(2025年末)</span>
                       {getSortIcon('cityInvestDebt')}
                     </div>
                   </th>
@@ -129,7 +130,7 @@ export function DataTable() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <span>宽口径债务率</span>
-                      <span className="text-xs text-gray-500">(2024)</span>
+                      <span className="text-xs text-gray-500">(2025年末)</span>
                       {getSortIcon('adjustedDebtRatio')}
                     </div>
                   </th>
@@ -139,7 +140,7 @@ export function DataTable() {
                   >
                     <div className="flex flex-col items-center gap-1">
                       <span>窄口径债务率</span>
-                      <span className="text-xs text-gray-500">(2024)</span>
+                      <span className="text-xs text-gray-500">(2025)</span>
                       {getSortIcon('debtRatio')}
                     </div>
                   </th>
@@ -176,7 +177,7 @@ export function DataTable() {
                   <th className="px-3 py-4 text-center text-sm font-semibold text-gray-300 whitespace-nowrap">
                     <div className="flex flex-col items-center gap-1">
                       <span>风险等级</span>
-                      <span className="text-xs text-gray-500">(2024)</span>
+                      <span className="text-xs text-gray-500">(2025)</span>
                     </div>
                   </th>
                 </tr>
@@ -257,7 +258,7 @@ export function DataTable() {
         {/* Summary */}
         <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
           <span>共 {filteredAndSortedData.length} 个省份</span>
-          <span>数据来源：各省2024年预算执行报告 · 华泰固收团队整理</span>
+          <span>数据来源：财政部、地方财政公开数据 · 华泰固收整理</span>
         </div>
       </div>
     </motion.section>
